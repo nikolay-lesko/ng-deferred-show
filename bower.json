@@ -1,0 +1,20 @@
+{
+  "name": "ng-deferred-show",
+  "version": "0.1.0",
+  "license": "MIT",
+  "main": "ngDeferredShow.js",
+  "dependencies": {
+    "angular": "~1.4.6"
+  },
+  "authors": [
+    "Nikolay Lesko <nikolay.v.lesko@gmail.com>"
+  ],
+  "description": "Angular directive for delaying element compilation",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

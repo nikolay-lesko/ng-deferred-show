@@ -1,0 +1,27 @@
+<html>
+<body>
+<script src="bower_components/angular/angular.js"></script>
+<script src="ngDeferredShow.js"></script>
+<script src="app.js"></script>
+
+<div ng-app="app">
+	<div ng-controller="Main">
+		<h3>
+			<p>This demo shows visible items immediately, but delays compilation of invisible items for specified time.</p>
+			<p>Delayed items will be compiled in batch for the same timeout interval.</p>
+			<p>When element has been compiled, its visibility could be changed via adding/removing class ng-hide (like ng-show)</p>
+			<p>In this demo custom strategy is used to compile batch of 5 items every 500 milliseconds</p>
+		</h3>
+
+		<label>
+            <input type="checkbox" ng-model="visible" ng-click="onClick()"/>
+			Visible
+		</label>
+
+		<div ng-repeat="item in items" ng-deferred-show="item.visible" compile-timeout="timeout(item)">
+			Item {{item.index}}
+		</div>
+	</div>
+</div>
+</body>
+</html>
