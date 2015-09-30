@@ -1,5 +1,6 @@
 # ng-deferred-show
-Angular directive for delaying element compilation (inspired by ng-lazy-show - http://developers.lendio.com/blog/combining-ng-if-and-ng-show-for-better-angularjs-performance/ )
+Angular directive for delaying element compilation 
+(inspired by ng-lazy-show - http://developers.lendio.com/blog/combining-ng-if-and-ng-show-for-better-angularjs-performance/ )
 
 This directive will immediately compiles visible elements(based on value of ng-deferred-show), but defers compilation of invisible elements for specified time (compile-timeout attribute).
 All elements with the same timeout will be compiled in batch.
