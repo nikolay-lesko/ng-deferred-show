@@ -3,6 +3,8 @@
 
     angular.module('ngDeferredShow', [])
         .directive('ngDeferredShow', function ($parse, $timeout, $animate) {
+            var timeoutBatches = {};
+
             return {
                 restrict: 'A',
                 transclude: 'element',
@@ -10,11 +12,10 @@
                 priority: 600,
                 terminal: true,
                 link: function (scope, element, attrs, $ctrl, $transclude) {
-                    var visible, loaded, timeoutBatches, timeout;
+                    var visible, compiled, timeout;
 
                     visible = $parse(attrs.ngDeferredShow)(scope);
-                    loaded = false;
-                    timeoutBatches = {};
+                    compiled = false;
 
                     if (visible) {
                         compile();
@@ -28,33 +29,17 @@
                     scope.$watch(attrs.ngDeferredShow, function (value) {
                         visible = value;
 
-                        if (loaded) {
+                        if (compiled) {
                             updateVisibility();
                         }
                     });
-
-                    function batchTimeout(callback, timeout) {
-                        if (!timeoutBatches[timeout]) {
-                            timeoutBatches[timeout] = [];
-
-                            $timeout(function () {
-                                angular.forEach(timeoutBatches[timeout], function (callback) {
-                                    callback();
-                                });
-
-                                delete timeoutBatches[timeout];
-                            }, timeout);
-                        }
-
-                        timeoutBatches[timeout].push(callback);
-                    }
 
                     function compile() {
                         $transclude(function (clone) {
                             $animate.enter(clone, element.parent(), element);
                             element = clone;
 
-                            loaded = true;
+                            compiled = true;
 
                             updateVisibility();
                         });
@@ -65,6 +50,23 @@
                     }
                 }
             };
-        });
 
+            function batchTimeout(callback, timeout) {
+                var batch = timeoutBatches[timeout];
+
+                if (!batch) {
+                    batch = timeoutBatches[timeout] = [];
+
+                    $timeout(function () {
+                        delete timeoutBatches[timeout];
+
+                        angular.forEach(batch, function (callback) {
+                            callback();
+                        });
+                    }, timeout);
+                }
+
+                batch.push(callback);
+            }
+        });
 }());
