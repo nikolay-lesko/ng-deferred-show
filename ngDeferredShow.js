@@ -12,12 +12,14 @@
                 priority: 600,
                 terminal: true,
                 link: function (scope, element, attrs, $ctrl, $transclude) {
-                    var visible, compiled, timeout;
+                    var visible, deferVisibleCompile, compiled, timeout;
 
                     visible = $parse(attrs.ngDeferredShow)(scope);
+                    deferVisibleCompile = $parse(attrs.deferVisibleCompile)(scope);
+
                     compiled = false;
 
-                    if (visible) {
+                    if (visible && !deferVisibleCompile) {
                         compile();
                     }
                     else {
