@@ -2,73 +2,77 @@
     'use strict';
 
     angular.module('ngDeferredShow', [])
-        .directive('ngDeferredShow', function ($parse, $timeout, $animate) {
-            var timeoutBatches = {};
+        .directive('ngDeferredShow', Directive);
 
-            return {
-                restrict: 'A',
-                transclude: 'element',
-                multiElement: true,
-                priority: 600,
-                terminal: true,
-                link: function (scope, element, attrs, $ctrl, $transclude) {
-                    var visible, deferVisibleCompile, compiled, timeout;
+    Directive.$inject = ['$parse', '$timeout', '$animate'];
+    
+    function Directive($parse, $timeout, $animate) {
+        var timeoutBatches = {};
 
-                    visible = $parse(attrs.ngDeferredShow)(scope);
-                    deferVisibleCompile = $parse(attrs.deferVisibleCompile)(scope);
+        return {
+            restrict: 'A',
+            transclude: 'element',
+            multiElement: true,
+            priority: 600,
+            terminal: true,
+            link: function (scope, element, attrs, $ctrl, $transclude) {
+                var visible, deferVisibleCompile, compiled, timeout;
 
-                    compiled = false;
+                visible = $parse(attrs.ngDeferredShow)(scope);
+                deferVisibleCompile = $parse(attrs.deferVisibleCompile)(scope);
 
-                    if (visible && !deferVisibleCompile) {
-                        compile();
+                compiled = false;
+
+                if (visible && !deferVisibleCompile) {
+                    compile();
+                }
+                else {
+                    timeout = $parse(attrs.compileTimeout)(scope);
+
+                    batchTimeout(compile, timeout);
+                }
+
+                scope.$watch(attrs.ngDeferredShow, function (value) {
+                    visible = value;
+
+                    if (compiled) {
+                        updateVisibility();
                     }
-                    else {
-                        timeout = $parse(attrs.compileTimeout)(scope);
+                });
 
-                        batchTimeout(compile, timeout);
-                    }
+                function compile() {
+                    $transclude(function (clone) {
+                        $animate.enter(clone, element.parent(), element);
+                        element = clone;
 
-                    scope.$watch(attrs.ngDeferredShow, function (value) {
-                        visible = value;
+                        compiled = true;
 
-                        if (compiled) {
-                            updateVisibility();
-                        }
+                        updateVisibility();
                     });
-
-                    function compile() {
-                        $transclude(function (clone) {
-                            $animate.enter(clone, element.parent(), element);
-                            element = clone;
-
-                            compiled = true;
-
-                            updateVisibility();
-                        });
-                    }
-
-                    function updateVisibility() {
-                        $animate[visible ? 'removeClass' : 'addClass'](element, 'ng-hide');
-                    }
-                }
-            };
-
-            function batchTimeout(callback, timeout) {
-                var batch = timeoutBatches[timeout];
-
-                if (!batch) {
-                    batch = timeoutBatches[timeout] = [];
-
-                    $timeout(function () {
-                        delete timeoutBatches[timeout];
-
-                        angular.forEach(batch, function (callback) {
-                            callback();
-                        });
-                    }, timeout);
                 }
 
-                batch.push(callback);
+                function updateVisibility() {
+                    $animate[visible ? 'removeClass' : 'addClass'](element, 'ng-hide');
+                }
             }
-        });
+        };
+
+        function batchTimeout(callback, timeout) {
+            var batch = timeoutBatches[timeout];
+
+            if (!batch) {
+                batch = timeoutBatches[timeout] = [];
+
+                $timeout(function () {
+                    delete timeoutBatches[timeout];
+
+                    angular.forEach(batch, function (callback) {
+                        callback();
+                    });
+                }, timeout);
+            }
+
+            batch.push(callback);
+        }
+    }
 }());
