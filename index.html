@@ -18,9 +18,12 @@
 			Visible
 		</label>
 
-		<div ng-repeat="item in items" ng-deferred-show="item.visible" compile-timeout="timeout(item)">
-			Item {{item.index}}
-		</div>
+		<div ng-repeat="item in items"
+			 ng-deferred-show="item.visible"
+			 compile-timeout="timeout(item)"
+			 defer-visible-compile="true"
+			 on-compile-done="onCompileDone(item)"
+			 on-batch-done="onBatchDone()"> Item {{item.index}} </div>
 	</div>
 </div>
 </body>
