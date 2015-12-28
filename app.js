@@ -13,8 +13,16 @@ angular.module('app', ['ngDeferredShow'])
             }
         };
 
+        $scope.onCompileDone = function (item) {
+            var i = 0;
+        };
+
+        $scope.onBatchDone = function () {
+            var i = 0;
+        };
+
         $scope.timeout = function (item) {
-            return batchDistribution(item.index, 5) * 500;
+            return (batchDistribution(item.index, 5) + 1) * 1000;
         };
 
         function batchDistribution(index, batchSize) {
