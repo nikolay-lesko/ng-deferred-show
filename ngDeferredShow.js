@@ -5,7 +5,7 @@
         .directive('ngDeferredShow', Directive);
 
     Directive.$inject = ['$parse', '$timeout', '$animate'];
-    
+
     function Directive($parse, $timeout, $animate) {
         var timeoutBatches = {};
 
@@ -16,10 +16,15 @@
             priority: 600,
             terminal: true,
             link: function (scope, element, attrs, $ctrl, $transclude) {
-                var visible, deferVisibleCompile, compiled, timeout;
+                var visible, deferVisibleCompile, compiled, timeout, doneCallback, batchDoneCallback;
 
                 visible = $parse(attrs.ngDeferredShow)(scope);
                 deferVisibleCompile = $parse(attrs.deferVisibleCompile)(scope);
+                doneCallback = attrs.onCompileDone ? $parse(attrs.onCompileDone) : angular.noop;
+                
+                batchDoneCallback = function() {
+                    (attrs.onBatchDone ? $parse(attrs.onBatchDone) : angular.noop)(scope);
+                };
 
                 compiled = false;
 
@@ -29,7 +34,7 @@
                 else {
                     timeout = $parse(attrs.compileTimeout)(scope);
 
-                    batchTimeout(compile, timeout);
+                    batchTimeout(compile, timeout, batchDoneCallback);
                 }
 
                 scope.$watch(attrs.ngDeferredShow, function (value) {
@@ -48,6 +53,8 @@
                         compiled = true;
 
                         updateVisibility();
+
+                        doneCallback(scope);
                     });
                 }
 
@@ -57,7 +64,7 @@
             }
         };
 
-        function batchTimeout(callback, timeout) {
+        function batchTimeout(callback, timeout, batchDoneCallback) {
             var batch = timeoutBatches[timeout];
 
             if (!batch) {
@@ -69,6 +76,8 @@
                     angular.forEach(batch, function (callback) {
                         callback();
                     });
+
+                    batchDoneCallback();
                 }, timeout);
             }
 
